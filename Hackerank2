@@ -1,0 +1,141 @@
+import java.util.Scanner;
+import java.util.Scanner;
+
+public class Hackerank1 {
+    
+    static class Edge {//sebuah edge dalam grap/mst
+        //berisi lokasi awal, lokasi tujuan, dan bobot/berat
+        int src, dest, weight;
+        Edge(int src, int dest, int weight) {
+            this.src = src;
+            this.dest = dest;
+            this.weight = weight;
+        }
+    }
+
+    static int find(int parent[], int i) {//mencari node
+        //mencari root, jika parent[i] == -1 maka itu adalah root
+        if (parent[i] == -1)
+            return i;
+        return find(parent, parent[i]);
+    }
+
+    static void union(int parent[], int x, int y) {
+        //menggabungkan dua himpunan berbeda
+        int xset = find(parent, x);
+        int yset = find(parent, y);
+        parent[xset] = yset;
+    }
+
+    static void sortEdges(Edge[] edges) {//metod asd sort berdasarkan berat
+        //sort menggunakan bubble sort
+        for (int i = 0; i < edges.length - 1; i++) {
+            for (int j = 0; j < edges.length - 1 - i; j++) {
+                if (edges[j].weight > edges[j + 1].weight) {
+                    Edge temp = edges[j];
+                    edges[j] = edges[j + 1];
+                    edges[j + 1] = temp;
+                }
+            }
+        }
+    }
+
+    static void KruskalAlgoritma(int V, Edge[] edges) {
+        int[][] graph = new int[V][V];//grap 
+        int[][] mst = new int[V][V];//minimum spanning tree
+        int[] parent = new int[V];//struktur komponen terhubung dari graf
+        //variabel parent memastikan bahwa penambahan edge tidak akan membentuk siklus
+        
+        //inisialisasi parent, grap, dan mst
+        for (int i = 0; i < V; i++) {
+            parent[i] = -1;
+            for (int j = 0; j < V; j++) {
+                graph[i][j] = 0;
+                mst[i][j] = 0;
+            }
+        }
+        
+        //mengisi grap 
+        for (Edge edge : edges) {
+                graph[edge.src - 1][edge.dest - 1] = edge.weight;
+                graph[edge.dest - 1][edge.src - 1] = edge.weight;
+        }
+
+        System.out.println("Graph sebelum MST:");
+        printGraph(graph);
+        
+        //sort grap sesuai edges (berat)
+        sortEdges(edges);
+//        //melihat parent
+//            System.out.print("\nparent = [");
+//            for (int i = 0; i < parent.length; i++) {
+//                System.out.print(parent[i]);
+//                if (i<parent.length-1) {
+//                    System.out.print(", ");
+//                }
+//            }
+//            System.out.println("]");
+            
+        int mstWeight = 0;//menyimpan total bobot mst
+        for (Edge edge : edges) {
+//            System.out.println("\nedge ("+edge.src+","+edge.dest+","+edge.weight+")");//melihat bobot tersort
+            //Mencari root dari node sumber dan tujuan untuk edge saat ini
+            int x = find(parent, edge.src - 1);
+            int y = find(parent, edge.dest - 1);
+//            System.out.println("x = "+x + ", y = "+y);
+            //Jika kedua node berada dalam himpunan yang berbeda, tambahkan edge tersebut ke mst
+            if (x != y) {
+                union(parent, x, y);
+                mst[edge.src - 1][edge.dest - 1] = edge.weight;
+                mst[edge.dest - 1][edge.src - 1] = edge.weight;
+                mstWeight += edge.weight;
+            }
+//            //melihat parent
+//            System.out.print("parent = [");
+//            for (int i = 0; i < parent.length; i++) {
+//                System.out.print(parent[i]);
+//                if (i<parent.length-1) {
+//                    System.out.print(", ");
+//                }
+//            }
+//            System.out.println("]");
+        }
+        System.out.println("");
+        System.out.println("Total bobot dari graph: " + mstWeight);
+        System.out.println("Graph setelah MST");
+        printGraph(mst);
+        
+        
+    }
+
+    static void printGraph(int[][] graph) {
+        for (int i = 0; i < graph.length; i++) {
+            System.out.print("[");
+            for (int j = 0; j < graph[i].length; j++) {
+                System.out.print(graph[i][j]);
+                if (j < graph[i].length - 1) {
+                    System.out.print(", ");
+                }
+            }
+            System.out.println("]");
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int V = sc.nextInt();//ukuran graph mewakili banyak vertex
+        sc.nextLine(); 
+        String edgesInput = sc.nextLine();
+        String[] edgesArray = edgesInput.split(" ");
+        
+        Edge[] edges = new Edge[edgesArray.length];
+        for (int i = 0; i < edgesArray.length; i++) {
+            String[] parts = edgesArray[i].split(",");
+            int src = Integer.parseInt(parts[0]);
+            int dest = Integer.parseInt(parts[1]);
+            int weight = Integer.parseInt(parts[2]);
+            edges[i] = new Edge(src, dest, weight);
+        }
+        KruskalAlgoritma(V, edges);
+    }
+}
